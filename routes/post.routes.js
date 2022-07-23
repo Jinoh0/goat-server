@@ -122,7 +122,7 @@ router.delete(
 
       await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
-        { $pull: { post: postId } },
+        { $pull: { postList: postId } },
         { runValidators: true }
       );
 
