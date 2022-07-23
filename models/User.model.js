@@ -1,4 +1,4 @@
-const { Schema, model, default: mongoose, Types } = require("mongoose");
+const { Schema, Types, model, default: mongoose } = require("mongoose");
 
 const userSchema = new Schema({
   userName: { type: String, trim: true },
@@ -9,7 +9,7 @@ const userSchema = new Schema({
     trim: true,
     match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
   },
-  bio: { type: String, maxLength: 128, trim: true },
+  bio: { type: String, maxlength: 128, trim: true },
   favoriteList: [{ type: Types.ObjectId, ref: "Post" }],
   postList: [{ type: Types.ObjectId, ref: "Post" }],
   passwordHash: { type: String, required: true },

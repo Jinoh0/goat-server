@@ -1,14 +1,14 @@
-const { Schema, model, Types } = require("mongoose");
+const { Schema, Types, model } = require("mongoose");
 
 const postSchema = new Schema({
-  favorite: [{ type: Types.ObjectId, ref: "User" }],
+  favorite: [{ type: Types.ObjectId, ref: "User" }], //ver depois como ficara
   owner: { type: Types.ObjectId, ref: "User" },
   title: {
     type: String,
     required: true,
     trim: true,
-    minLenght: 12,
-    maxLength: 48,
+    minlength: 12,
+    maxlength: 48,
   },
   link: { type: String, trim: true },
   img: { type: String, trim: true },

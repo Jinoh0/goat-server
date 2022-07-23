@@ -5,14 +5,17 @@ const attachCurrentUser = require("../middlewares/attachCurrentUser");
 const UserModel = require("../models/User.model");
 const CommentModel = require("../models/Comment.model");
 
+const saltRounds = 10;
+
 router.post("/create-post", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const loggedInUser = req.currentUser;
 
     const createdPost = await PostModel.create({
       ...req.body,
-      owner: loggedInUser,
+      owner: loggedInUser._id,
     });
+
     await UserModel.findOneAndUpdate(
       { _id: loggedInUser._id },
       { $push: { postList: createdPost._id } }
@@ -32,10 +35,21 @@ router.get("/my-posts", isAuth, attachCurrentUser, async (req, res) => {
       { owner: loggedInUser._id },
       { comments: 0 }
     );
-
     return res.status(200).json(userPosts);
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).json(error);
+  }
+});
+
+router.get("/all-posts", isAuth, attachCurrentUser, async (req, res) => {
+  try {
+    const loggedInUser = req.currentUser;
+
+    const userPosts = await PostModel.find(req.body);
+    return res.status(200).json(userPosts);
+  } catch (error) {
+    console.error(error);
     return res.status(500).json(error);
   }
 });
@@ -58,7 +72,7 @@ router.patch("/edit/:postId", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const { postId } = req.params;
     const loggedInUser = req.currentUser;
-    const body = req.body;
+    const body = { ...req.body };
     delete body.comments;
     const post = await PostModel.findOne({ _id: postId });
 
@@ -117,16 +131,5 @@ router.delete(
     }
   }
 );
-
-router.get("/all-posts", async (req, res) => {
-  try {
-    const posts = await PostModel.find(req.body);
-
-    return res.status(200).json(posts);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json(error);
-  }
-});
 
 module.exports = router;
