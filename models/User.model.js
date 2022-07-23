@@ -1,7 +1,7 @@
-const { Schema, model, default: mongoose } = require("mongoose");
+const { Schema, model, default: mongoose, Types } = require("mongoose");
 
 const userSchema = new Schema({
-  name: { type: String, required: true, trim: true },
+  userName: { type: String, trim: true },
   email: {
     type: String,
     required: true,
@@ -9,6 +9,9 @@ const userSchema = new Schema({
     trim: true,
     match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
   },
+  bio: { type: String, maxLength: 128, trim: true },
+  favoriteList: [{ type: Types.ObjectId, ref: "Post" }],
+  postList: [{ type: Types.ObjectId, ref: "Post" }],
   passwordHash: { type: String, required: true },
   img: { type: String },
   role: { type: String, enum: ["ADMIN", "USER"], default: "USER" },
