@@ -31,7 +31,6 @@ router.post("/create-post", isAuth, attachCurrentUser, async (req, res) => {
 router.get("/my-posts", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const loggedInUser = req.currentUser;
-
     const userPosts = await PostModel.find(
       { owner: loggedInUser._id },
       { comments: 0 }
@@ -43,7 +42,7 @@ router.get("/my-posts", isAuth, attachCurrentUser, async (req, res) => {
   }
 });
 
-router.get("/all-posts", isAuth, attachCurrentUser, async (req, res) => {
+router.get("/all-posts", async (req, res) => {
   try {
     const loggedInUser = req.currentUser;
 
@@ -57,21 +56,17 @@ router.get("/all-posts", isAuth, attachCurrentUser, async (req, res) => {
 
 router.get("/:postId", isAuth, attachCurrentUser, async (req, res) => {
   try {
-    const loggedInUser = req.currentUser;
-
     const { postId } = req.params;
+    const loggedInUser = req.currentUser;
+    const post = await PostModel.findOne({ _id: postId });
 
-    const foundPost = await PostModel.findOne({ _id: postId });
-
-    // const owner = await UserModel.findOne({ _id: foundPost.owner });
-    //soh vai usar quando precisar de restrictions
-
-    return res.status(200).json(foundPost);
+    return res.status(200).json(post);
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return res.status(500).json(error);
   }
 });
+module.exports = router;
 
 router.patch("/edit/:postId", isAuth, attachCurrentUser, async (req, res) => {
   try {
@@ -82,17 +77,17 @@ router.patch("/edit/:postId", isAuth, attachCurrentUser, async (req, res) => {
     const post = await PostModel.findOne({ _id: postId });
 
     if (String(post.owner) !== String(loggedInUser._id)) {
-      return res.status(401).json({ msg: "Voce nao e o dono do post" });
+      return res.status(401).json({ message: "Você não é dono desse post" });
     }
 
-    const updatedPost = await PostModel.findOneAndUpdate(
+    const editedPost = await PostModel.findOneAndUpdate(
       { _id: postId },
       { ...body },
       { new: true, runValidators: true }
     );
-    return res.status(200).json(updatedPost);
+    return res.status(200).json(editedPost);
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return res.status(500).json(error);
   }
 });
@@ -106,9 +101,11 @@ router.delete(
       const { postId } = req.params;
       const loggedInUser = req.currentUser;
 
-      const post = await PostModel.findOne({ _id: postId });
+      const post = await PostModel.findOne({
+        _id: postId,
+      });
       if (String(post.owner) !== String(loggedInUser._id)) {
-        return res.status(401).json({ msg: "Voce nao e o dono do post" });
+        return res.status(401).json({ message: "Você não é dono do post" });
       }
 
       const deletedPost = await PostModel.deleteOne({
@@ -125,6 +122,9 @@ router.delete(
       console.log(post);
       await CommentModel.deleteOne({ deletedPostComments });
 
+      //retirar os comentários deletados de dentro do commentList de todos usuários
+
+      //tirando o post do usuário criador do post
       await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
         { $pull: { postList: postId } },
@@ -133,14 +133,13 @@ router.delete(
 
       return res.status(200).json(deletedPost);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       return res.status(500).json(error);
     }
   }
 );
 
 module.exports = router;
-
 
 //await usermodel.findone if there is id pull
 //quando post da delete , tem que ir no favortie list de todos e retirar

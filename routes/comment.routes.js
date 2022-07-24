@@ -3,13 +3,13 @@ const UserModel = require("../models/User.model");
 const PostModel = require("../models/Post.model");
 
 const isAuth = require("../middlewares/isAuth");
-const attachedCurrentUser = require("../middlewares/attachCurrentUser");
+const attachCurrentUser = require("../middlewares/attachCurrentUser");
 const CommentModel = require("../models/Comment.model");
 
 router.post(
   "/:postId/create-comment",
   isAuth,
-  attachedCurrentUser,
+  attachCurrentUser,
   async (req, res) => {
     try {
       const { postId } = req.params;
@@ -63,7 +63,7 @@ router.get("/:postId/all-comments", async (req, res) => {
 router.patch(
   "/edit/:commentId",
   isAuth,
-  attachedCurrentUser,
+  attachCurrentUser,
   async (req, res) => {
     try {
       const { commentId } = req.params;
@@ -98,7 +98,7 @@ router.patch(
 router.delete(
   "/delete/:commentId",
   isAuth,
-  attachedCurrentUser,
+  attachCurrentUser,
   async (req, res) => {
     try {
       const { commentId } = req.params;

@@ -11,6 +11,7 @@ const userSchema = new Schema({
   },
   bio: { type: String, maxlength: 128, trim: true },
   favoriteList: [{ type: Types.ObjectId, ref: "Post" }],
+  commentList: [{ type: Types.ObjectId, ref: "Comment" }],
   postList: [{ type: Types.ObjectId, ref: "Post" }],
   commentList: [{ type: Types.ObjectId, ref: "Comment" }],
   passwordHash: { type: String, required: true },
