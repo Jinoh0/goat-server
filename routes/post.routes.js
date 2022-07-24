@@ -115,14 +115,19 @@ router.delete(
         _id: postId,
       });
 
-      await CommentModel.updateMany(
-        { post: postId },
-        { $pull: { post: postId } }
-      );
+      // await CommentModel.updateMany(
+      //   { post: postId },
+      //   { $pull: { post: postId } }
+      // );
+
+      const deletedPostComments = post.comments;
+
+      console.log(post);
+      await CommentModel.deleteOne({ deletedPostComments });
 
       await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
-        { $pull: { post: postId } },
+        { $pull: { postList: postId } },
         { runValidators: true }
       );
 
@@ -135,3 +140,7 @@ router.delete(
 );
 
 module.exports = router;
+
+
+//await usermodel.findone if there is id pull
+//quando post da delete , tem que ir no favortie list de todos e retirar
