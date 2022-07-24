@@ -20,7 +20,6 @@ router.post(
         post: postId,
       });
 
-      console.log(req);
       await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
         { $push: { commentList: createdComment } }
@@ -31,13 +30,6 @@ router.post(
         { $push: { comments: createdComment } }
       );
 
-      console.log(req.body);
-      // if (!req.body.post || req.body.post == {}) {
-      //   return res
-      //     .status(400)
-      //     .json({ message: "o comment precisa de um post" });
-      // }
-      //porque o teste ta dando errado toda hroa?
       return res.status(200).json(createdComment);
     } catch (error) {
       console.error(error);
@@ -70,17 +62,6 @@ router.patch(
       const loggedInUser = req.currentUser;
       const comment = await CommentModel.findOne({ _id: commentId });
       const body = { ...req.body };
-      console.log(body);
-      // delete body.comment;
-      //pq nao precisa disso? KAREN
-
-      console.log(commentId);
-
-      // if (comment.owner !== loggedInUser._id) {
-      //   return res
-      //     .status(401)
-      //     .json({ msg: "Voce nao pode alterar esse album" });
-      // }
 
       const updatedComment = await CommentModel.findOneAndUpdate(
         { _id: comment._id },
@@ -90,6 +71,39 @@ router.patch(
       return res.status(200).json(updatedComment);
     } catch (error) {
       console.error(error);
+      return res.status(500).json(error);
+    }
+  }
+);
+
+router.patch(
+  "/like/:commentId",
+  isAuth,
+  attachCurrentUser,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.currentUser;
+      const { commentId } = req.params;
+      const comment = await CommentModel.findOne({ _id: commentId });
+
+      if (comment.likes.includes(loggedInUser._id)) {
+        const unLike = await CommentModel.findOneAndUpdate(
+          { _id: commentId },
+          { $pull: { likes: loggedInUser._id } },
+          { new: true, runValidators: true }
+        );
+        return res.status(200).json(unLike);
+      }
+
+      const likeComment = await CommentModel.findOneAndUpdate(
+        { _id: commentId },
+        { $push: { likes: loggedInUser._id } },
+        { new: true, runValidators: true }
+      );
+
+      return res.status(200).json(likeComment);
+    } catch (error) {
+      console.log(error);
       return res.status(500).json(error);
     }
   }
