@@ -1,9 +1,10 @@
 const router = require("express").Router();
-const CommentModel = require("../models/Comment.model");
-const isAuth = require("../middlewares/isAuth");
-const attachCurrentUser = require("../middlewares/attachCurrentUser");
 const UserModel = require("../models/User.model");
 const PostModel = require("../models/Post.model");
+
+const isAuth = require("../middlewares/isAuth");
+const attachCurrentUser = require("../middlewares/attachCurrentUser");
+const CommentModel = require("../models/Comment.model");
 
 router.post(
   "/:postId/create-comment",
@@ -13,38 +14,48 @@ router.post(
     try {
       const { postId } = req.params;
       const loggedInUser = req.currentUser;
-      const comment = await CommentModel.create({
+      const createdComment = await CommentModel.create({
         ...req.body,
         owner: loggedInUser._id,
         post: postId,
       });
-      const user = await UserModel.findOneAndUpdate(
+
+      console.log(req);
+      await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
-        { $push: { commentList: comment } }
+        { $push: { commentList: createdComment } }
       );
 
-      const post = await PostModel.findOneAndUpdate(
+      await PostModel.findOneAndUpdate(
         { _id: postId },
-        { $push: { comments: comment } }
+        { $push: { comments: createdComment } }
       );
-      return res.status(201).json(comment);
+
+      console.log(req.body);
+      // if (!req.body.post || req.body.post == {}) {
+      //   return res
+      //     .status(400)
+      //     .json({ message: "o comment precisa de um post" });
+      // }
+      //porque o teste ta dando errado toda hroa?
+      return res.status(200).json(createdComment);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(500).json(error);
     }
   }
 );
 
-router.get("/:postId/comments", async (req, res) => {
+router.get("/:postId/all-comments", async (req, res) => {
   try {
     const { postId } = req.params;
-    const comments = await PostModel.findOne({ _id: postId }).populate(
+    const allComments = await PostModel.findOne({ _id: postId }).populate(
       "comments"
     );
 
-    return res.status(200).json(comments);
+    return res.status(200).json(allComments);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json(error);
   }
 });
@@ -57,15 +68,29 @@ router.patch(
     try {
       const { commentId } = req.params;
       const loggedInUser = req.currentUser;
-      const editedComment = await CommentModel.findOneAndUpdate(
-        { _id: commentId },
-        { ...req.body },
+      const comment = await CommentModel.findOne({ _id: commentId });
+      const body = { ...req.body };
+      console.log(body);
+      // delete body.comment;
+      //pq nao precisa disso? KAREN
+
+      console.log(commentId);
+
+      // if (comment.owner !== loggedInUser._id) {
+      //   return res
+      //     .status(401)
+      //     .json({ msg: "Voce nao pode alterar esse album" });
+      // }
+
+      const updatedComment = await CommentModel.findOneAndUpdate(
+        { _id: comment._id },
+        { ...body },
         { new: true, runValidators: true }
       );
-      return res.status(200).json(editedComment);
+      return res.status(200).json(updatedComment);
     } catch (error) {
-      console.log(error);
-      res.status(500).json(error);
+      console.error(error);
+      return res.status(500).json(error);
     }
   }
 );
@@ -76,20 +101,16 @@ router.delete(
   attachCurrentUser,
   async (req, res) => {
     try {
-      const loggedInUser = req.currentUser;
       const { commentId } = req.params;
+      const loggedInUser = req.currentUser;
       const comment = await CommentModel.findOne({ _id: commentId });
-      if (String(comment.owner) !== String(loggedInUser._id)) {
-        return res
-          .status(401)
-          .json({ message: "Você não é dono desse comentário" });
-      }
-      const deletedComment = await CommentModel.deleteOne({ _id: commentId });
+      const deletedComment = await CommentModel.deleteOne({
+        _id: commentId,
+      });
 
-      await PostModel.findOneAndUpdate(
-        { _id: comment.post._id },
-        { $pull: { comments: commentId } },
-        { runValidators: true }
+      await PostModel.updateMany(
+        { comments: commentId },
+        { $pull: { comments: commentId } }
       );
 
       await UserModel.findOneAndUpdate(
@@ -100,8 +121,8 @@ router.delete(
 
       return res.status(200).json(deletedComment);
     } catch (error) {
-      console.log(error);
-      res.status(500).json(error);
+      console.error(error);
+      return res.status(500).json(error);
     }
   }
 );

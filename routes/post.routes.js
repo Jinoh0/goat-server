@@ -112,9 +112,15 @@ router.delete(
         _id: postId,
       });
 
-      const commentsDeleted = await CommentModel.deleteMany({ post: postId });
-      //retirar post do fav list de todos usuários
-      console.log(post.comments, "AQUI MERMAO");
+      // await CommentModel.updateMany(
+      //   { post: postId },
+      //   { $pull: { post: postId } }
+      // );
+
+      const deletedPostComments = post.comments;
+
+      console.log(post);
+      await CommentModel.deleteOne({ deletedPostComments });
 
       //retirar os comentários deletados de dentro do commentList de todos usuários
 
@@ -134,3 +140,6 @@ router.delete(
 );
 
 module.exports = router;
+
+//await usermodel.findone if there is id pull
+//quando post da delete , tem que ir no favortie list de todos e retirar
