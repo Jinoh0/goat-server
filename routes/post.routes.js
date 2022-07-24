@@ -42,7 +42,7 @@ router.get("/my-posts", isAuth, attachCurrentUser, async (req, res) => {
   }
 });
 
-router.get("/all-posts", isAuth, attachCurrentUser, async (req, res) => {
+router.get("/all-posts", async (req, res) => {
   try {
     const loggedInUser = req.currentUser;
 
@@ -58,7 +58,7 @@ router.get("/:postId", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const { postId } = req.params;
     const loggedInUser = req.currentUser;
-    const post = await PostModel.findOne({ id: postId });
+    const post = await PostModel.findOne({ _id: postId });
 
     return res.status(200).json(post);
   } catch (error) {
@@ -104,7 +104,6 @@ router.delete(
       const post = await PostModel.findOne({
         _id: postId,
       });
-      console.log(post);
       if (String(post.owner) !== String(loggedInUser._id)) {
         return res.status(401).json({ message: "Você não é dono do post" });
       }
@@ -113,14 +112,16 @@ router.delete(
         _id: postId,
       });
 
-      await CommentModel.updateMany(
-        { post: postId },
-        { $pull: { post: postId } }
-      );
+      const commentsDeleted = await CommentModel.deleteMany({ post: postId });
+      //retirar post do fav list de todos usuários
+      console.log(post.comments, "AQUI MERMAO");
 
+      //retirar os comentários deletados de dentro do commentList de todos usuários
+
+      //tirando o post do usuário criador do post
       await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
-        { $pull: { post: postId } },
+        { $pull: { postList: postId } },
         { runValidators: true }
       );
 
