@@ -92,6 +92,51 @@ router.patch("/edit/:postId", isAuth, attachCurrentUser, async (req, res) => {
   }
 });
 
+router.patch(
+  "/:postId/favorite",
+  isAuth,
+  attachCurrentUser,
+  async (req, res) => {
+    try {
+      const { postId } = req.params;
+      const loggedInUser = req.currentUser;
+      const post = await PostModel.findOne({ _id: postId });
+
+      if (loggedInUser.favoriteList.includes(postId)) {
+        const unFavorite = await UserModel.findOneAndUpdate(
+          { _id: loggedInUser._id },
+          { $pull: { favoriteList: postId } },
+          { new: true, runValidators: true }
+        );
+
+        const unFavPost = await PostModel.findOneAndUpdate(
+          { _id: postId },
+          { $pull: { favorite: loggedInUser._id } },
+          { new: true, runValidators: true }
+        );
+        return res.status(200).json(unFavorite);
+      }
+
+      const favorite = await PostModel.findOneAndUpdate(
+        { _id: postId },
+        { $push: { favorite: loggedInUser._id } },
+        { new: true, runValidators: true }
+      );
+
+      const userFavorite = await UserModel.findOneAndUpdate(
+        { _id: loggedInUser._id },
+        { $push: { favoriteList: postId } },
+        { new: true, runValidators: true }
+      );
+
+      return res.status(200).json(favorite);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json(error);
+    }
+  }
+);
+
 router.delete(
   "/delete/:postId",
   isAuth,
@@ -103,33 +148,34 @@ router.delete(
 
       const post = await PostModel.findOne({
         _id: postId,
-      });
+      }).populate("comments");
       if (String(post.owner) !== String(loggedInUser._id)) {
         return res.status(401).json({ message: "Você não é dono do post" });
       }
 
-      const deletedPost = await PostModel.deleteOne({
-        _id: postId,
+      const comments = post.comments;
+
+      comments.forEach(async (currentElement) => {
+        if (postId) {
+          await UserModel.findOneAndUpdate(
+            { _id: currentElement.owner },
+            { $pull: { commentList: currentElement._id } },
+            { new: true, runValidators: true }
+          );
+        }
       });
 
-      // await CommentModel.updateMany(
-      //   { post: postId },
-      //   { $pull: { post: postId } }
-      // );
+      await CommentModel.deleteMany({ post: postId });
 
-      const deletedPostComments = post.comments;
-
-      console.log(post);
-      await CommentModel.deleteOne({ deletedPostComments });
-
-      //retirar os comentários deletados de dentro do commentList de todos usuários
-
-      //tirando o post do usuário criador do post
       await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
         { $pull: { postList: postId } },
         { runValidators: true }
       );
+
+      const deletedPost = await PostModel.deleteOne({
+        _id: postId,
+      });
 
       return res.status(200).json(deletedPost);
     } catch (error) {
@@ -140,6 +186,3 @@ router.delete(
 );
 
 module.exports = router;
-
-//await usermodel.findone if there is id pull
-//quando post da delete , tem que ir no favortie list de todos e retirar
