@@ -7,6 +7,57 @@ const CommentModel = require("../models/Comment.model");
 
 const saltRounds = 10;
 
+router.patch(
+  "/favorite/:postId",
+  isAuth,
+  attachCurrentUser,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.currentUser;
+      const { postId } = req.params;
+      console.log("console do pib brasileiro " + PostModel.title);
+
+      // const createdFavorite = await PostModel.create({
+      //   ...req.body,
+      //   favorite: loggedInUser._id,
+      // });
+
+      await PostModel.findOneAndUpdate(
+        { _id: postId },
+        { $push: { favorite: loggedInUser._id } },
+        { new: true, runValidators: true }
+      );
+
+      await UserModel.findOneAndUpdate(
+        { _id: loggedInUser._id },
+        { $push: { favoriteList: postId } },
+        { new: true, runValidators: true }
+      );
+
+      return res.status(200).json({ msg: "favoritado" });
+      // if (UserModel.favoriteList.includes(postId)) {
+      //   UserModel.findOneAndUpdate(
+      //     { _id: loggedInUser._id },
+      //     { $pull: { favoriteList: postId } }
+      //   );
+      // } else {
+      //   UserModel.findOneAndUpdate(
+      //     { _id: loggedInUser._id },
+      //     { $push: { favoriteList: postId } }
+      //   );
+      // }
+
+      // await UserModel.findOneAndUpdate(
+      //   { _id: loggedInUser._id },
+      //   { $push: { favoriteList: postId } }
+      // );
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json(error);
+    }
+  }
+);
+
 router.post("/create-post", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const loggedInUser = req.currentUser;
@@ -119,7 +170,7 @@ router.delete(
 
       const deletedPostComments = post.comments;
 
-      console.log(post);
+      console.log(post.comments);
       await CommentModel.deleteOne({ deletedPostComments });
 
       //retirar os comentários deletados de dentro do commentList de todos usuários
@@ -128,6 +179,13 @@ router.delete(
       await UserModel.findOneAndUpdate(
         { _id: loggedInUser._id },
         { $pull: { postList: postId } },
+        { runValidators: true }
+      );
+
+      await post.comments.forEach((element) => {});
+      await UserModel.findOneAndUpdate(
+        { _id: loggedInUser._id },
+        { $pull: { commentList: element } },
         { runValidators: true }
       );
 

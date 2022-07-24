@@ -1,7 +1,7 @@
 const { Schema, Types, model } = require("mongoose");
 
 const postSchema = new Schema({
-  favorite: [{ type: Types.ObjectId, ref: "User" }], //ver depois como ficara
+  favorite: [{ type: Types.ObjectId, ref: "User" }], 
   owner: { type: Types.ObjectId, ref: "User" },
   title: {
     type: String,
