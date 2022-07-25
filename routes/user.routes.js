@@ -70,8 +70,16 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/profile", isAuth, attachCurrentUser, (req, res) => {
+router.get("/profile", isAuth, attachCurrentUser, async (req, res) => {
   return res.status(200).json(req.currentUser);
+});
+
+router.get("/:profileId", async (req, res) => {
+  const { profileId } = req.params;
+
+  const profile = await UserModel.findOne({ _id: profileId });
+
+  return res.status(200).json(profile);
 });
 
 router.patch("/update-profile", isAuth, attachCurrentUser, async (req, res) => {

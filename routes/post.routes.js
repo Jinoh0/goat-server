@@ -42,8 +42,6 @@ router.get("/my-posts", isAuth, attachCurrentUser, async (req, res) => {
 
 router.get("/all-posts", async (req, res) => {
   try {
-    const loggedInUser = req.currentUser;
-
     const userPosts = await PostModel.find(req.body);
     return res.status(200).json(userPosts);
   } catch (error) {
@@ -55,7 +53,7 @@ router.get("/all-posts", async (req, res) => {
 router.get("/:postId", async (req, res) => {
   try {
     const { postId } = req.params;
-    const loggedInUser = req.currentUser;
+
     const post = await PostModel.findOne({ _id: postId });
 
     return res.status(200).json(post);
