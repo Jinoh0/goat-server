@@ -54,7 +54,7 @@ router.get("/all-posts", async (req, res) => {
   }
 });
 
-router.get("/:postId", isAuth, attachCurrentUser, async (req, res) => {
+router.get("/:postId", async (req, res) => {
   try {
     const { postId } = req.params;
     const loggedInUser = req.currentUser;
