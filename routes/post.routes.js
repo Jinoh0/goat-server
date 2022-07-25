@@ -5,8 +5,6 @@ const attachCurrentUser = require("../middlewares/attachCurrentUser");
 const UserModel = require("../models/User.model");
 const CommentModel = require("../models/Comment.model");
 
-const saltRounds = 10;
-
 router.post("/create-post", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const loggedInUser = req.currentUser;
@@ -44,8 +42,6 @@ router.get("/my-posts", isAuth, attachCurrentUser, async (req, res) => {
 
 router.get("/all-posts", async (req, res) => {
   try {
-    const loggedInUser = req.currentUser;
-
     const userPosts = await PostModel.find(req.body);
     return res.status(200).json(userPosts);
   } catch (error) {
@@ -57,7 +53,7 @@ router.get("/all-posts", async (req, res) => {
 router.get("/:postId", async (req, res) => {
   try {
     const { postId } = req.params;
-    const loggedInUser = req.currentUser;
+
     const post = await PostModel.findOne({ _id: postId });
 
     return res.status(200).json(post);
