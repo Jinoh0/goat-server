@@ -7,7 +7,6 @@ const CommentModel = require("../models/Comment.model");
 
 const saltRounds = 10;
 
-
 router.post("/create-post", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const loggedInUser = req.currentUser;
