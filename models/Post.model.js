@@ -28,7 +28,7 @@ const postSchema = new Schema({
       "Hot-Toast",
     ],
   },
-
+  createdAt: { type: Date, default: Date.now() },
   link: { type: String, trim: true },
   img: { type: String, trim: true },
   description: { type: String, required: true, minLength: 64 },
