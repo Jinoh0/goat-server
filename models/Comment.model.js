@@ -5,6 +5,7 @@ const commentSchema = new Schema({
   post: { type: Types.ObjectId, ref: "Post" },
   comment: { type: String, required: true, minlength: 64 },
   likes: [{ type: Types.ObjectId, ref: "User" }],
+  createdAt: { type: Date, default: Date.now() },
 });
 
 const CommentModel = model("Comment", commentSchema);
