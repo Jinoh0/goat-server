@@ -87,7 +87,7 @@ router.get("/profile", isAuth, attachCurrentUser, async (req, res) => {
   return res.status(200).json(userData);
 });
 
-router.get("/:profileId", async (req, res) => {
+router.get("/profile/:profileId", async (req, res) => {
   const { profileId } = req.params;
 
   const profile = await UserModel.findOne({ _id: profileId })
