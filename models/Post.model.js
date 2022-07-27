@@ -25,7 +25,7 @@ const postSchema = new Schema({
       "GIT & GITHUB",
       "Bootstrap",
       "TailWind",
-      "Hot-Toast",
+      "Other",
     ],
   },
   createdAt: { type: Date, default: Date.now() },

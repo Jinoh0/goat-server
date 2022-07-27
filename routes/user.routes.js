@@ -33,6 +33,9 @@ router.post("/signup", async (req, res) => {
       ...req.body,
       passwordHash: passwordHash,
     });
+    // .populate("favoriteList")
+    // .populate("postList")
+    // .populate("commentList");
 
     delete createdUser._doc.passwordHash;
 
@@ -71,13 +74,26 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/profile", isAuth, attachCurrentUser, async (req, res) => {
-  return res.status(200).json(req.currentUser);
+  console.log(req.currentUser);
+
+  const loggedInUser = req.currentUser;
+  const userData = await UserModel.findOne({ _id: loggedInUser._id })
+    .populate("favoriteList")
+    .populate("commentList")
+    .populate("postList");
+
+  console.log(userData + "console do loggedinuser");
+
+  return res.status(200).json(userData);
 });
 
 router.get("/:profileId", async (req, res) => {
   const { profileId } = req.params;
 
-  const profile = await UserModel.findOne({ _id: profileId });
+  const profile = await UserModel.findOne({ _id: profileId })
+    .populate("favoriteList")
+    .populate("commentList")
+    .populate("postList");
 
   return res.status(200).json(profile);
 });
