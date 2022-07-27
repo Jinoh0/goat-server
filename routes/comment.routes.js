@@ -43,10 +43,13 @@ router.get("/:postId/all-comments", async (req, res) => {
     const { postId } = req.params;
     const allComments = await PostModel.findOne({ _id: postId })
       .populate("comments")
-      .populate("owner")
-      .populate("post");
+      .populate("owner");
 
-    return res.status(200).json(allComments);
+    const someComments = await CommentModel.find({ post: postId }).populate(
+      "owner"
+    );
+
+    return res.status(200).json(someComments);
   } catch (error) {
     console.error(error);
     return res.status(500).json(error);
