@@ -69,7 +69,6 @@ router.get("/:postId", async (req, res) => {
     return res.status(500).json(error);
   }
 });
-module.exports = router;
 
 router.patch("/edit/:postId", isAuth, attachCurrentUser, async (req, res) => {
   try {
