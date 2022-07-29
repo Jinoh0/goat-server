@@ -124,6 +124,11 @@ router.delete(
       const { commentId } = req.params;
       const loggedInUser = req.currentUser;
       const comment = await CommentModel.findOne({ _id: commentId });
+      if (String(comment.owner !== loggedInUser._id)) {
+        return res
+          .status(401)
+          .json({ message: "voce não é dono do comentário" });
+      }
       const deletedComment = await CommentModel.deleteOne({
         _id: commentId,
       });
