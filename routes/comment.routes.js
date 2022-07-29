@@ -124,7 +124,9 @@ router.delete(
       const { commentId } = req.params;
       const loggedInUser = req.currentUser;
       const comment = await CommentModel.findOne({ _id: commentId });
-      if (String(comment.owner !== String(loggedInUser._id))) {
+      console.log(comment + "COMMENT");
+      console.log(loggedInUser + "LOGGED");
+      if (String(comment.owner) != String(loggedInUser._id)) {
         return res
           .status(401)
           .json({ message: "voce não é dono do comentário" });
